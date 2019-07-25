@@ -34,12 +34,6 @@ $("#add-train-btn").on("click", function(event) {
   // Uploads train data obj to the database
   database.ref().push(newTrain);
 
-  // Logs everything to console
-  console.log(newTrain.name);
-  console.log(newTrain.destination);
-  console.log(newTrain.firstTrain);
-  console.log(newTrain.frequency);
-
   alert("Train successfully added");
 
   // Clears all of the text-boxes
@@ -51,7 +45,6 @@ $("#add-train-btn").on("click", function(event) {
 
 // 3. Create Firebase event for adding train to the database and a row in the html when a user adds an entry
 database.ref().on("child_added", function(childSnapshot) {
-  console.log(childSnapshot.val());
 
   // Store everything into a variable.
   var trainName = childSnapshot.val().name;
@@ -60,34 +53,23 @@ database.ref().on("child_added", function(childSnapshot) {
   var trainFrequency = childSnapshot.val().frequency;
 
   // Train Info
-  console.log(trainName);
-  console.log(trainDestination);
-  console.log(trainFirst);
-  console.log(trainFrequency);
-
   var tFrequency = trainFrequency;
   var firstTime = trainFirst;
   var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
   
   var currentTime = moment();
-  console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
 
   // Difference between the times
   var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-  console.log("DIFFERENCE IN TIME: " + diffTime);
 
   // Time apart (remainder)
   var tRemainder = diffTime % tFrequency;
-  console.log(tRemainder);
 
   // Minute Until Train
   var tMinutesTillTrain = tFrequency - tRemainder;
-  console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
 
   // Next Train
   var nextTrain = moment().add(tMinutesTillTrain, "minutes");
-  console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
-
 
   // Create the new row
   var newRow = $("<tr>").append(
@@ -103,8 +85,8 @@ database.ref().on("child_added", function(childSnapshot) {
 });
 
 $(document).ready(function() {
-  // auto refresh page after 1 second
-  setInterval('refreshPage()', 60000);
+  // auto refresh page after 30 seconds
+  setInterval('refreshPage()', 30000);
 });
 
 function refreshPage() { 
