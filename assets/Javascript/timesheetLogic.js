@@ -1,3 +1,4 @@
+//Firebase Config and initialize
 var config = {
   apiKey: "AIzaSyB-RN6dHFkl9DYeEZ0XsqUGX1RLR-rq5uY",
     authDomain: "trainsch-garciat427.firebaseapp.com",
@@ -12,14 +13,14 @@ firebase.initializeApp(config);
 
 var database = firebase.database();
 
-// 2. Button for adding Employees
+// Add Train btn Event
 $("#add-train-btn").on("click", function(event) {
   event.preventDefault();
 
   // Grabs user input
   var trainName = $("#train-name-input").val().trim();
   var trainDes = $("#destination-input").val().trim();
-  var trainFirst = moment($("#first-train-input").val().trim()).format("X");
+  var trainFirst = (moment($("#first-train-input").val().trim(),"HH:mm").format("HH:mm"));
   var trainFreq = $("#frequency-input").val().trim();
 
   // Creates local "temporary" object for holding train data
@@ -30,7 +31,7 @@ $("#add-train-btn").on("click", function(event) {
     frequency: trainFreq
   };
 
-  // Uploads train data to the database
+  // Uploads train data obj to the database
   database.ref().push(newTrain);
 
   // Logs everything to console
@@ -48,46 +49,57 @@ $("#add-train-btn").on("click", function(event) {
   $("#frequency-input").val("");
 });
 
-// 3. Create Firebase event for adding employee to the database and a row in the html when a user adds an entry
+// 3. Create Firebase event for adding train to the database and a row in the html when a user adds an entry
 database.ref().on("child_added", function(childSnapshot) {
   console.log(childSnapshot.val());
 
   // Store everything into a variable.
   var trainName = childSnapshot.val().name;
   var trainDestination = childSnapshot.val().destination;
-  var trainStart = childSnapshot.val().firstTrain;
+  var trainFirst = childSnapshot.val().firstTrain;
   var trainFrequency = childSnapshot.val().frequency;
 
   // Train Info
   console.log(trainName);
   console.log(trainDestination);
-  console.log(trainStart);
-  console.log(trainRate);
+  console.log(trainFirst);
+  console.log(trainFrequency);
 
-  // Prettify the employee start
-  //var empStartPretty = moment.unix(trainStart).format("h:mm a");
+  var tFrequency = trainFrequency;
+  var firstTime = trainFirst;
+  var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
+  
+  var currentTime = moment();
+  console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
 
-  // Calculate the months worked using hardcore math
-  // To calculate the months worked
-  //var empMonths = moment().diff(moment(empStart, "X"), "months");
-  //console.log(empMonths);
+  // Difference between the times
+  var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+  console.log("DIFFERENCE IN TIME: " + diffTime);
 
-  // Calculate the total billed rate
-  //var empBilled = empMonths * empRate;
-  //console.log(empBilled);
+  // Time apart (remainder)
+  var tRemainder = diffTime % tFrequency;
+  console.log(tRemainder);
+
+  // Minute Until Train
+  var tMinutesTillTrain = tFrequency - tRemainder;
+  console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
+
+  // Next Train
+  var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+  console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
+
 
   // Create the new row
   var newRow = $("<tr>").append(
     $("<td>").text(trainName),
     $("<td>").text(trainDestination),
     $("<td>").text(trainFrequency),
-    $("<td>").text(empMonths),
-    $("<td>").text(empRate),
-    $("<td>").text(empBilled)
+    $("<td>").text(moment(nextTrain).format("hh:mm a")),
+    $("<td>").text(tMinutesTillTrain),
   );
 
   // Append the new row to the table
-  $("#employee-table > tbody").append(newRow);
+  $("#train-table > tbody").append(newRow);
 });
 
 // Example Time Math
